@@ -15,7 +15,8 @@ apis:
       try-on solution right into your own app or website 
 name: FASHN AI
 tags:
-  - API
+  - Fashion
+  - Clothing
 type: Contract
 image: https://kinlane-productions.s3.amazonaws.com/apis-json/apis-json-logo.jpg
 access: 3rd-Party
@@ -23,8 +24,15 @@ created: '2025-03-01'
 modified: '2025-04-07'
 position: Consuming
 description: >-
-  Give your users an unforgettable experience by integrating our clothing try-on
-  solution right into your own app or website 
+  FASHN AI is a revolutionary technology that uses artificial intelligence to
+  revolutionize the fashion industry. By analyzing trends, customer preferences,
+  and market data, FASHN AI is able to predict future trends, suggest
+  personalized recommendations, and optimize product offerings for brands and
+  retailers. This innovative platform combines data science, machine learning,
+  and advanced analytics to help fashion companies stay ahead of the curve and
+  make informed decisions that drive business growth. With FASHN AI, businesses
+  can streamline their operations, enhance customer experiences, and increase
+  profitability in a rapidly changing industry.
 maintainers:
   - FN: Kin Lane
     email: info@apievangelist.com
