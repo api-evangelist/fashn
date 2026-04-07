@@ -13,9 +13,9 @@ created: '2025-03-01'
 modified: '2026-03-16'
 position: Consumer
 tags:
-  - Fashion
-  - Clothing
   - AI
+  - Clothing
+  - Fashion
 url: >-
   https://raw.githubusercontent.com/api-evangelist/fashn/refs/heads/main/apis.yml
 specificationVersion: '0.19'
@@ -23,8 +23,8 @@ apis:
   - aid: fashn:fashn
     name: FASHN
     tags:
-      - Fashion
       - Clothing
+      - Fashion
     humanURL: https://fashn.ai/products/api
     properties:
       - url: https://fashn.ai/products/api
