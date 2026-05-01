@@ -1,42 +1,55 @@
 # FASHN AI (fashn)
-FASHN AI is a cutting-edge technology that revolutionizes the fashion industry by using artificial intelligence to analyze and predict trends in real-time. By mining data from social media platforms, online fashion publications, and e-commerce websites, FASHN AI can quickly identify emerging styles, colors, and patterns that are gaining popularity among consumers. This information is then used by designers, retailers, and marketers to create more targeted and relevant collections, maximize sales, and stay ahead of the competition. With its ability to analyze vast amounts of data and provide valuable insights, FASHN AI is helping to shape the future of fashion.
+
+FASHN AI is an AI-first company specializing in human-centric generative image models tailored for fashion applications. The public API exposes an asynchronous prediction workflow against a catalog of models including Try-On Max, Product to Model, Face to Model, Model Create, Model Swap, Edit, Reframe, Image to Video, and Background Remove.
 
 **URL:** [Visit APIs.json URL](https://raw.githubusercontent.com/api-evangelist/fashn/refs/heads/main/apis.yml)
 
 ## Scope
 
-- **Type:** Contract 
-- **Position:** Consuming 
-- **Access:** 3rd-Party 
+- **Type:** Index
+- **Position:** Consumer
+- **Access:** 3rd-Party
 
 ## Tags:
 
- - Fashion, Clothing
+- AI, Clothing, Fashion, Virtual Try-On
 
 ## Timestamps
 
-- **Created:** 2025-03-01 
-- **Modified:** 2025-04-07 
+- **Created:** 2025-03-01
+- **Modified:** 2026-04-28
 
 ## APIs
 
 ### FASHN
-FASHN AI is a revolutionary artificial intelligence platform that leverages cutting-edge technology to provide personalized and data-driven fashion recommendations to users. By analyzing individual preferences, style choices, and body measurements, FASHN AI curates a curated selection of clothing and accessories that best fit each user's unique taste and needs. This innovative platform not only saves users time and effort in browsing through endless options but also helps them discover new brands and trends that align with their personal fashion aesthetic. With FASHN AI, users can confidently shop online and elevate their style with ease and confidence.
+
+The FASHN API is an asynchronous prediction service. Clients submit a job by POSTing to `/v1/run` with a `model_name` and model-specific `inputs`, then poll `/v1/status/{id}` until the prediction reaches a terminal state. Authentication is via Bearer token. Rate limits: 50 req/60s on `/run`, 50 req/10s on `/status`, with a concurrency cap of 6. CDN output URLs are valid for 72 hours; base64 outputs for 60 minutes.
 
 **Human URL:** [https://fashn.ai/products/api](https://fashn.ai/products/api)
 
+**Base URL:** `https://api.fashn.ai/v1`
 
 #### Tags:
 
- - Fashion, Clothing
+- AI, Clothing, Fashion, Virtual Try-On
 
 #### Properties
 
 - [Documentation](https://fashn.ai/products/api)
+- [API Documentation](https://docs.fashn.ai/)
+- [API Reference](https://docs.fashn.ai/api-overview/api-fundamentals)
+- [Developer Portal](https://app.fashn.ai/api)
+- [OpenAPI](https://raw.githubusercontent.com/api-evangelist/fashn/refs/heads/main/openapi/fashn-openapi.yml)
+
+## Common Properties
+
+- [Website](https://fashn.ai/)
+- [Documentation](https://fashn.ai/products/api)
+- [API Documentation](https://docs.fashn.ai/)
+- [Developer Portal](https://app.fashn.ai/api)
 
 ## Maintainers
 
 **FN:** Kin Lane
 
-**Email:** info@apievangelist.com
-
+**Email:** kin@apievangelist.com
