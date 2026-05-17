@@ -36,7 +36,7 @@ apis:
       - url: https://docs.fashn.ai/
         type: API Documentation
       - url: https://docs.fashn.ai/api-overview/api-fundamentals
-        type: API Reference
+        type: APIReference
       - url: https://app.fashn.ai/api
         type: Developer Portal
       - url: https://raw.githubusercontent.com/api-evangelist/fashn/refs/heads/main/openapi/fashn-openapi.yml
