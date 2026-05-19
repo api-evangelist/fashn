@@ -1,0 +1,122 @@
+naftiko: 1.0.0-alpha2
+info:
+  label: FASHN AI API — Predictions
+  description: 'FASHN AI API — Predictions. 2 operations. Lead operation: Submit a new prediction job. Self-contained Naftiko
+    capability covering one Fashn business surface.'
+  tags:
+  - Fashn
+  - Predictions
+  created: '2026-05-19'
+  modified: '2026-05-19'
+binds:
+- namespace: env
+  keys:
+    FASHN_API_KEY: FASHN_API_KEY
+capability:
+  consumes:
+  - type: http
+    namespace: fashn-predictions
+    baseUri: https://api.fashn.ai/v1
+    description: FASHN AI API — Predictions business capability. Self-contained, no shared references.
+    resources:
+    - name: run
+      path: /run
+      operations:
+      - name: runprediction
+        method: POST
+        description: Submit a new prediction job
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: body
+          in: body
+          type: object
+          description: Request body (JSON).
+          required: true
+    - name: status-id
+      path: /status/{id}
+      operations:
+      - name: getpredictionstatus
+        method: GET
+        description: Retrieve prediction status and output
+        outputRawFormat: json
+        outputParameters:
+        - name: result
+          type: object
+          value: $.
+        inputParameters:
+        - name: id
+          in: path
+          type: string
+          description: Prediction identifier returned from /run.
+          required: true
+    authentication:
+      type: bearer
+      token: '{{env.FASHN_API_KEY}}'
+  exposes:
+  - type: rest
+    namespace: fashn-predictions-rest
+    port: 8080
+    description: REST adapter for FASHN AI API — Predictions. One Spectral-compliant resource per consumed operation, prefixed
+      with /v1.
+    resources:
+    - path: /v1/run
+      name: run
+      description: REST surface for run.
+      operations:
+      - method: POST
+        name: runprediction
+        description: Submit a new prediction job
+        call: fashn-predictions.runprediction
+        with:
+          body: rest.body
+        outputParameters:
+        - type: object
+          mapping: $.
+    - path: /v1/status/{id}
+      name: status-id
+      description: REST surface for status-id.
+      operations:
+      - method: GET
+        name: getpredictionstatus
+        description: Retrieve prediction status and output
+        call: fashn-predictions.getpredictionstatus
+        with:
+          id: rest.id
+        outputParameters:
+        - type: object
+          mapping: $.
+  - type: mcp
+    namespace: fashn-predictions-mcp
+    port: 9090
+    transport: http
+    description: MCP adapter for FASHN AI API — Predictions. One tool per consumed operation, routed inline through this capability's
+      consumes block.
+    tools:
+    - name: submit-new-prediction-job
+      description: Submit a new prediction job
+      hints:
+        readOnly: false
+        destructive: false
+        idempotent: false
+      call: fashn-predictions.runprediction
+      with:
+        body: tools.body
+      outputParameters:
+      - type: object
+        mapping: $.
+    - name: retrieve-prediction-status-and-output
+      description: Retrieve prediction status and output
+      hints:
+        readOnly: true
+        destructive: false
+        idempotent: true
+      call: fashn-predictions.getpredictionstatus
+      with:
+        id: tools.id
+      outputParameters:
+      - type: object
+        mapping: $.
