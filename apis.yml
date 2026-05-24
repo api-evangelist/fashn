@@ -55,6 +55,8 @@ common:
     url: https://docs.fashn.ai/
   - type: Developer Portal
     url: https://app.fashn.ai/api
+  - type: LLMsTxt
+    url: https://docs.fashn.ai/llms.txt
 maintainers:
   - FN: Kin Lane
     email: kin@apievangelist.com
