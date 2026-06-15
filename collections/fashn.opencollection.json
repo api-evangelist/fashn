@@ -1,0 +1,58 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "FASHN AI API",
+    "version": "1.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Predictions",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Submit a new prediction job",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.fashn.ai/v1/run",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Queues a new prediction for the requested model. The response contains a prediction id which must be polled via the status endpoint until the job reaches a terminal state. Rate limit: 50 requests per 60 seconds. Concurrency limit: 6 simultaneous predictions per account."
+        },
+        {
+          "info": {
+            "name": "Retrieve prediction status and output",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.fashn.ai/v1/status/:id",
+            "params": [
+              {
+                "name": "id",
+                "value": "",
+                "type": "path",
+                "description": "Prediction identifier returned from /run."
+              }
+            ]
+          },
+          "docs": "Returns the current state of a prediction. CDN output URLs are valid for 72 hours; base64 outputs are valid for 60 minutes. Rate limit: 50 requests per 10 seconds."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}
