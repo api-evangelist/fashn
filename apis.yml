@@ -35,7 +35,7 @@ apis:
       - url: https://docs.fashn.ai/api-overview/api-fundamentals
         type: APIReference
       - url: https://app.fashn.ai/api
-        type: Developer Portal
+        type: DeveloperPortal
       - url: https://raw.githubusercontent.com/api-evangelist/fashn/refs/heads/main/openapi/fashn-openapi.yml
         type: OpenAPI
     description: >-
@@ -53,9 +53,9 @@ common:
     url: https://fashn.ai/products/api
   - type: API Documentation
     url: https://docs.fashn.ai/
-  - type: Developer Portal
+  - type: DeveloperPortal
     url: https://app.fashn.ai/api
-  - type: LLMsTxt
+  - type: LlmsText
     url: https://docs.fashn.ai/llms.txt
 maintainers:
   - FN: Kin Lane
