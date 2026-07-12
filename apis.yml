@@ -43,6 +43,10 @@ apis:
       inputs, then poll /v1/status/{id} until the prediction completes. Authentication uses a Bearer token. Rate limits:
       50 req/60s on /run, 50 req/10s on /status, 6 concurrent predictions. CDN outputs are retained for 72 hours.
 common:
+  - type: DomainSecurity
+    url: security/fashn-domain-security.yml
+  - type: Authentication
+    url: authentication/fashn-authentication.yml
   - type: GitHubOrganization
     url: https://github.com/fashn-AI
   - type: LinkedIn
@@ -57,6 +61,8 @@ common:
     url: https://app.fashn.ai/api
   - type: LlmsText
     url: https://docs.fashn.ai/llms.txt
+  - url: https://fashn.ai/blog
+    type: Blog
 maintainers:
   - FN: Kin Lane
     email: kin@apievangelist.com
