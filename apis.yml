@@ -43,6 +43,8 @@ apis:
       inputs, then poll /v1/status/{id} until the prediction completes. Authentication uses a Bearer token. Rate limits:
       50 req/60s on /run, 50 req/10s on /status, 6 concurrent predictions. CDN outputs are retained for 72 hours.
 common:
+  - type: AgenticAccess
+    url: agentic-access/fashn-agentic-access.yml
   - type: DomainSecurity
     url: security/fashn-domain-security.yml
   - type: Authentication
