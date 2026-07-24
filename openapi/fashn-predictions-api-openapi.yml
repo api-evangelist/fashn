@@ -1,34 +1,26 @@
 openapi: 3.1.0
 info:
-  title: FASHN AI API
-  description: >-
-    FASHN AI is a generative-image platform tailored for fashion. The public
-    API exposes an asynchronous prediction workflow: clients submit a job
-    against a named model with model-specific inputs, then poll a status
-    endpoint until the prediction completes. Models include Try-On Max,
-    Product to Model, Face to Model, Model Create, Model Swap, Edit, Reframe,
-    Image to Video, and Background Remove.
+  title: FASHN AI Predictions API
+  description: 'FASHN AI is a generative-image platform tailored for fashion. The public API exposes an asynchronous prediction workflow: clients submit a job against a named model with model-specific inputs, then poll a status endpoint until the prediction completes. Models include Try-On Max, Product to Model, Face to Model, Model Create, Model Swap, Edit, Reframe, Image to Video, and Background Remove.'
   version: '1.0'
   contact:
     name: FASHN AI
     url: https://fashn.ai/products/api
 servers:
-  - url: https://api.fashn.ai/v1
-    description: FASHN AI production API
+- url: https://api.fashn.ai/v1
+  description: FASHN AI production API
 security:
-  - BearerAuth: []
+- BearerAuth: []
+tags:
+- name: Predictions
 paths:
   /run:
     post:
       operationId: runPrediction
       summary: Submit a new prediction job
-      description: >-
-        Queues a new prediction for the requested model. The response contains
-        a prediction id which must be polled via the status endpoint until the
-        job reaches a terminal state. Rate limit: 50 requests per 60 seconds.
-        Concurrency limit: 6 simultaneous predictions per account.
+      description: 'Queues a new prediction for the requested model. The response contains a prediction id which must be polled via the status endpoint until the job reaches a terminal state. Rate limit: 50 requests per 60 seconds. Concurrency limit: 6 simultaneous predictions per account.'
       tags:
-        - Predictions
+      - Predictions
       requestBody:
         required: true
         content:
@@ -59,20 +51,17 @@ paths:
     get:
       operationId: getPredictionStatus
       summary: Retrieve prediction status and output
-      description: >-
-        Returns the current state of a prediction. CDN output URLs are valid
-        for 72 hours; base64 outputs are valid for 60 minutes. Rate limit: 50
-        requests per 10 seconds.
+      description: 'Returns the current state of a prediction. CDN output URLs are valid for 72 hours; base64 outputs are valid for 60 minutes. Rate limit: 50 requests per 10 seconds.'
       tags:
-        - Predictions
+      - Predictions
       parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-          description: Prediction identifier returned from /run.
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Prediction identifier returned from /run.
       responses:
         '200':
           description: Current prediction state.
@@ -85,31 +74,7 @@ paths:
         '404':
           description: Prediction not found.
 components:
-  securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: API Key
   schemas:
-    RunRequest:
-      type: object
-      required:
-        - model_name
-        - inputs
-      properties:
-        model_name:
-          type: string
-          description: >-
-            The FASHN model to invoke (e.g. tryon-max, product-to-model,
-            face-to-model, model-create, model-swap, edit, reframe,
-            image-to-video, background-remove).
-          examples:
-            - tryon-max
-            - product-to-model
-        inputs:
-          type: object
-          additionalProperties: true
-          description: Model-specific input parameters.
     RunResponse:
       type: object
       properties:
@@ -129,11 +94,11 @@ components:
         status:
           type: string
           enum:
-            - starting
-            - in_queue
-            - processing
-            - completed
-            - failed
+          - starting
+          - in_queue
+          - processing
+          - completed
+          - failed
           description: Current lifecycle state of the prediction.
         output:
           type: array
@@ -141,10 +106,29 @@ components:
           items:
             type: string
             format: uri
-          description: >-
-            Output asset URLs (CDN). Available when status is completed. URLs
-            are valid for 72 hours.
+          description: Output asset URLs (CDN). Available when status is completed. URLs are valid for 72 hours.
         error:
           type: string
           nullable: true
           description: Error message when status is failed, otherwise null.
+    RunRequest:
+      type: object
+      required:
+      - model_name
+      - inputs
+      properties:
+        model_name:
+          type: string
+          description: The FASHN model to invoke (e.g. tryon-max, product-to-model, face-to-model, model-create, model-swap, edit, reframe, image-to-video, background-remove).
+          examples:
+          - tryon-max
+          - product-to-model
+        inputs:
+          type: object
+          additionalProperties: true
+          description: Model-specific input parameters.
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API Key
