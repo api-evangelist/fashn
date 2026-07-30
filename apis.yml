@@ -5,7 +5,20 @@ description: >-
   applications. The public API offers an asynchronous prediction workflow against a catalog of models including Try-On
   Max, Product to Model, Face to Model, Model Create, Model Swap, Edit, Reframe, Image to Video, and Background Remove.
 type: Index
-image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
+accessModel:
+  pricing: freemium
+  onboarding: self-serve
+  trial: false
+  try_now: true
+  public: false
+  label: Freemium · Self-serve signup
+  confidence: high
+  source:
+  - plans
+  - authentication
+  generated: '2026-07-22'
+  method: derived
+image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/fashn.png
 access: 3rd-Party
 created: '2025-03-01'
 modified: '2026-05-19'
@@ -18,30 +31,24 @@ tags:
 url: https://raw.githubusercontent.com/api-evangelist/fashn/refs/heads/main/apis.yml
 specificationVersion: '0.19'
 apis:
-  - aid: fashn:fashn
-    name: FASHN
-    tags:
-      - Clothing
-      - Fashion
-      - AI
-      - Virtual Try-On
-    humanURL: https://fashn.ai/products/api
-    baseURL: https://api.fashn.ai/v1
-    properties:
-      - url: https://fashn.ai/products/api
-        type: Documentation
-      - url: https://docs.fashn.ai/
-        type: API Documentation
-      - url: https://docs.fashn.ai/api-overview/api-fundamentals
-        type: APIReference
-      - url: https://app.fashn.ai/api
-        type: DeveloperPortal
-      - url: https://raw.githubusercontent.com/api-evangelist/fashn/refs/heads/main/openapi/fashn-openapi.yml
-        type: OpenAPI
-    description: >-
-      The FASHN API is an asynchronous prediction service. Clients POST to /v1/run with a model_name and model-specific
-      inputs, then poll /v1/status/{id} until the prediction completes. Authentication uses a Bearer token. Rate limits:
-      50 req/60s on /run, 50 req/10s on /status, 6 concurrent predictions. CDN outputs are retained for 72 hours.
+- aid: fashn:fashn-predictions-api
+  name: FASHN AI Predictions API
+  description: The Predictions API from FASHN AI — 2 operation(s) for predictions.
+  humanURL: https://fashn.ai/products/api
+  baseURL: https://api.fashn.ai/v1
+  tags:
+  - Predictions
+  properties:
+  - type: OpenAPI
+    url: openapi/fashn-predictions-api-openapi.yml
+  - type: Documentation
+    url: https://fashn.ai/products/api
+  - type: API Documentation
+    url: https://docs.fashn.ai/
+  - type: APIReference
+    url: https://docs.fashn.ai/api-overview/api-fundamentals
+  - type: DeveloperPortal
+    url: https://app.fashn.ai/api
 common:
   - type: AgenticAccess
     url: agentic-access/fashn-agentic-access.yml
