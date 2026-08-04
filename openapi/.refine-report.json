@@ -1,0 +1,14 @@
+{
+  "provider": "fashn",
+  "sources": [
+    "fashn-predictions-api-openapi.yml"
+  ],
+  "outputs": [
+    "fashn-predictions-api-openapi.yml"
+  ],
+  "archived": [],
+  "errors": [],
+  "warnings": [],
+  "notes": [],
+  "skipped": []
+}
