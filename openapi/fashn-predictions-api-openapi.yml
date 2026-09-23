@@ -1,4 +1,4 @@
-openapi: 3.1.0
+openapi: 3.2.0
 info:
   title: FASHN AI Predictions API
   description: 'FASHN AI is a generative-image platform tailored for fashion. The public API exposes an asynchronous prediction workflow: clients submit a job against a named model with model-specific inputs, then poll a status endpoint until the prediction completes. Models include Try-On Max, Product to Model, Face to Model, Model Create, Model Swap, Edit, Reframe, Image to Video, and Background Remove.'
@@ -75,17 +75,6 @@ paths:
           description: Prediction not found.
 components:
   schemas:
-    RunResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          description: Identifier used to poll prediction status.
-        error:
-          type: string
-          nullable: true
-          description: Error message if the request was rejected, otherwise null.
     StatusResponse:
       type: object
       properties:
@@ -111,6 +100,17 @@ components:
           type: string
           nullable: true
           description: Error message when status is failed, otherwise null.
+    RunResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Identifier used to poll prediction status.
+        error:
+          type: string
+          nullable: true
+          description: Error message if the request was rejected, otherwise null.
     RunRequest:
       type: object
       required:
