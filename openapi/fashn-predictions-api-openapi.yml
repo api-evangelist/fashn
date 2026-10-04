@@ -75,6 +75,33 @@ paths:
           description: Prediction not found.
 components:
   schemas:
+    RunResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Identifier used to poll prediction status.
+        error:
+          type: string
+          nullable: true
+          description: Error message if the request was rejected, otherwise null.
+    RunRequest:
+      type: object
+      required:
+      - model_name
+      - inputs
+      properties:
+        model_name:
+          type: string
+          description: The FASHN model to invoke (e.g. tryon-max, product-to-model, face-to-model, model-create, model-swap, edit, reframe, image-to-video, background-remove).
+          examples:
+          - tryon-max
+          - product-to-model
+        inputs:
+          type: object
+          additionalProperties: true
+          description: Model-specific input parameters.
     StatusResponse:
       type: object
       properties:
@@ -100,33 +127,6 @@ components:
           type: string
           nullable: true
           description: Error message when status is failed, otherwise null.
-    RunRequest:
-      type: object
-      required:
-      - model_name
-      - inputs
-      properties:
-        model_name:
-          type: string
-          description: The FASHN model to invoke (e.g. tryon-max, product-to-model, face-to-model, model-create, model-swap, edit, reframe, image-to-video, background-remove).
-          examples:
-          - tryon-max
-          - product-to-model
-        inputs:
-          type: object
-          additionalProperties: true
-          description: Model-specific input parameters.
-    RunResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          description: Identifier used to poll prediction status.
-        error:
-          type: string
-          nullable: true
-          description: Error message if the request was rejected, otherwise null.
   securitySchemes:
     BearerAuth:
       type: http
