@@ -67,6 +67,12 @@ apis:
   - type: DeveloperPortal
     url: https://app.fashn.ai/api
 common:
+  - type: Plans
+    url: plans/fashn-plans-pricing.yml
+  - type: RateLimits
+    url: rate-limits/fashn-rate-limits.yml
+  - type: FinOps
+    url: finops/fashn-finops.yml
   - type: AgenticAccess
     url: agentic-access/fashn-agentic-access.yml
   - type: DomainSecurity
