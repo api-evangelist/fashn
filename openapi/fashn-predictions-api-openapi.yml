@@ -75,17 +75,6 @@ paths:
           description: Prediction not found.
 components:
   schemas:
-    RunResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          description: Identifier used to poll prediction status.
-        error:
-          type: string
-          nullable: true
-          description: Error message if the request was rejected, otherwise null.
     RunRequest:
       type: object
       required:
@@ -102,6 +91,17 @@ components:
           type: object
           additionalProperties: true
           description: Model-specific input parameters.
+    RunResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Identifier used to poll prediction status.
+        error:
+          type: string
+          nullable: true
+          description: Error message if the request was rejected, otherwise null.
     StatusResponse:
       type: object
       properties:
