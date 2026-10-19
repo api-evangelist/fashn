@@ -1,97 +1,373 @@
-openapi: 3.1.0
+openapi: 3.1.1
 info:
-  title: FASHN AI API
-  description: >-
-    FASHN AI is a generative-image platform tailored for fashion. The public
-    API exposes an asynchronous prediction workflow: clients submit a job
-    against a named model with model-specific inputs, then poll a status
-    endpoint until the prediction completes. Models include Try-On Max,
-    Product to Model, Face to Model, Model Create, Model Swap, Edit, Reframe,
-    Image to Video, and Background Remove.
-  version: '1.0'
+  title: FASHN API
+  description: FASHN is an AI-first company specializing in human-centric generative image models tailored for fashion applications. The API provides developers and product teams with access to endpoints for image generation, virtual try-on, model creation, editing, background manipulation, and reframing functionalities.
+  version: 1.1.0
   contact:
-    name: FASHN AI
-    url: https://fashn.ai/products/api
+    name: FASHN
+    url: https://fashn.ai
 servers:
-  - url: https://api.fashn.ai/v1
-    description: FASHN AI production API
+  - url: https://api.fashn.ai
+    description: Production server
 security:
-  - BearerAuth: []
+  - ApiKeyAuth: []
 paths:
-  /run:
+  /v1/run:
     post:
-      operationId: runPrediction
-      summary: Submit a new prediction job
-      description: >-
-        Queues a new prediction for the requested model. The response contains
-        a prediction id which must be polled via the status endpoint until the
-        job reaches a terminal state. Rate limit: 50 requests per 60 seconds.
-        Concurrency limit: 6 simultaneous predictions per account.
+      summary: Create a new prediction
+      description: |
+        Submit a prediction request for AI-powered fashion processing. Supports multiple model types including:
+        - Try-on max (tryon-max)
+        - Virtual try-on v1.6 (tryon-v1.6)
+        - Model creation (model-create)
+        - Model swap (model-swap)
+        - Product to model (product-to-model)
+        - Face to model (face-to-model)
+        - Background operations (background-remove, background-change)
+        - Image reframing (reframe)
+        - Image to video (image-to-video)
+        - Image editing (edit)
+        - Product packshot (packshot)
+
+        All requests use the versioned format with model_name and inputs structure.
+      operationId: createPrediction
       tags:
         - Predictions
+      parameters:
+        - name: webhook_url
+          in: query
+          description: Optional webhook URL to receive completion notifications
+          required: false
+          schema:
+            type: string
+            format: uri
+            example: "https://example.com/webhook"
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RunRequest'
+              oneOf:
+                - $ref: "#/components/schemas/TryOnMaxRequest"
+                - $ref: "#/components/schemas/TryOnRequest"
+                - $ref: "#/components/schemas/ProductToModelRequest"
+                - $ref: "#/components/schemas/FaceToModelRequest"
+                - $ref: "#/components/schemas/ModelCreateRequest"
+                - $ref: "#/components/schemas/ModelSwapRequest"
+                - $ref: "#/components/schemas/ReframeRequest"
+                - $ref: "#/components/schemas/BackgroundChangeRequest"
+                - $ref: "#/components/schemas/BackgroundRemoveRequest"
+                - $ref: "#/components/schemas/ImageToVideoRequest"
+                - $ref: "#/components/schemas/EditRequest"
+                - $ref: "#/components/schemas/PackshotRequest"
+
+              discriminator:
+                propertyName: model_name
+                mapping:
+                  tryon-max: "#/components/schemas/TryOnMaxRequest"
+                  tryon-v1.6: "#/components/schemas/TryOnRequest"
+                  product-to-model: "#/components/schemas/ProductToModelRequest"
+                  face-to-model: "#/components/schemas/FaceToModelRequest"
+                  model-create: "#/components/schemas/ModelCreateRequest"
+                  model-swap: "#/components/schemas/ModelSwapRequest"
+                  reframe: "#/components/schemas/ReframeRequest"
+                  background-change: "#/components/schemas/BackgroundChangeRequest"
+                  background-remove: "#/components/schemas/BackgroundRemoveRequest"
+                  image-to-video: "#/components/schemas/ImageToVideoRequest"
+                  edit: "#/components/schemas/EditRequest"
+                  packshot: "#/components/schemas/PackshotRequest"
+            examples:
+              tryon-max:
+                summary: Virtual try-on max
+                value:
+                  model_name: "tryon-max"
+                  inputs:
+                    product_image: "https://example.com/garment.jpg"
+                    model_image: "https://example.com/model.jpg"
+              try-on-v1.6:
+                summary: Virtual try-on v1.6
+                value:
+                  model_name: "tryon-v1.6"
+                  inputs:
+                    model_image: "https://example.com/model.jpg"
+                    garment_image: "https://example.com/garment.jpg"
+              try-on-v1.6-base64:
+                summary: Virtual try-on v1.6 base64
+                value:
+                  model_name: "tryon-v1.6"
+                  inputs:
+                    model_image: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEA..."
+                    garment_image: "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEA..."
+              product-to-model:
+                summary: Product to Model
+                value:
+                  model_name: "product-to-model"
+                  inputs:
+                    product_image: "https://example.com/product.jpg"
+                    model_image: "http://example.com/path/to/person.jpg"
+                    prompt: "professional office setting"
+                    output_format: "png"
+                    return_base64: false
+              model-create:
+                summary: Model Create
+                value:
+                  model_name: "model-create"
+                  inputs:
+                    prompt: "Full body shot, woman wearing a white t-shirt and dark blue biker shorts"
+              model-swap:
+                summary: Model Swap
+                value:
+                  model_name: "model-swap"
+                  inputs:
+                    model_image: "https://example.com/fashion-model.jpg"
+                    prompt: "Asian woman with blue hair"
+              reframe:
+                summary: Reframe
+                value:
+                  model_name: "reframe"
+                  inputs:
+                    image: "https://example.com/portrait.jpg"
+                    aspect_ratio: "16:9"
+              background-change:
+                summary: Background Change
+                value:
+                  model_name: "background-change"
+                  inputs:
+                    image: "https://example.com/portrait.jpg"
+                    prompt: "modern office space with large windows"
+              face-to-model:
+                summary: Face to Model
+                value:
+                  model_name: "face-to-model"
+                  inputs:
+                    face_image: "https://example.com/headshot.jpg"
+                    output_format: "jpeg"
+              background-remove:
+                summary: Background Remove
+                value:
+                  model_name: "background-remove"
+                  inputs:
+                    image: "https://example.com/portrait.jpg"
+              image-to-video:
+                summary: Image to Video
+                value:
+                  model_name: "image-to-video"
+                  inputs:
+                    image: "https://example.com/photo.jpg"
+                    end_image: "https://example.com/end-frame.jpg"
+                    duration: 5
+                    resolution: "720p"
+              edit:
+                summary: Edit
+                value:
+                  model_name: "edit"
+                  inputs:
+                    image: "https://example.com/photo.jpg"
+                    prompt: "change the dress to red"
+              packshot:
+                summary: Packshot
+                value:
+                  model_name: "packshot"
+                  inputs:
+                    product_image: "https://example.com/product.jpg"
+                    prompt: "clean commercial flat-lay on white background"
+
       responses:
-        '200':
-          description: Prediction accepted.
-          headers:
-            x-fashn-credits-used:
-              schema:
-                type: integer
-              description: Credits consumed by the request.
+        "200":
+          description: Prediction created successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RunResponse'
-        '400':
-          description: Bad Request - invalid input.
-        '401':
-          description: Unauthorized - missing or invalid bearer token.
-        '402':
-          description: Payment Required - insufficient credits.
-        '429':
-          description: Too Many Requests - rate limit exceeded.
-  /status/{id}:
+                $ref: "#/components/schemas/PredictionResponse"
+              example:
+                id: "12345678-1234-5678-9012-123456789012"
+                error: null
+        "400":
+          description: Bad request - Invalid request format. Check request structure and required parameters.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: "BadRequest"
+                message: "Invalid request body"
+        "401":
+          description: Unauthorized - Invalid/missing API key. Verify your API key in the Authorization header.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: "UnauthorizedAccess"
+                message: "Invalid or inactive API key"
+        "429":
+          description: Too many requests - Implement request throttling, wait for current requests to complete, or purchase more credits.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                rate-limit:
+                  summary: Too many requests
+                  value:
+                    error: "RateLimitExceeded"
+                    message: "Too many requests"
+                concurrency-limit:
+                  summary: Too many concurrent requests
+                  value:
+                    error: "ConcurrencyLimitExceeded"
+                    message: "Too many concurrent requests"
+                out-of-credits:
+                  summary: No API credits remaining
+                  value:
+                    error: "OutOfCredits"
+                    message: "No API credits remaining"
+        "500":
+          description: Internal server error - Server error. Retry after delay, contact support if persistent.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: "InternalServerError"
+                message: "Server error"
+
+  /v1/status/{id}:
     get:
+      summary: Get prediction status
+      description: |
+        Poll for the status of a specific prediction using its ID. Use this endpoint to track prediction progress and retrieve results.
+
+        **Status States:**
+        - `starting` - Prediction is being initialized
+        - `in_queue` - Prediction is waiting to be processed  
+        - `processing` - Model is actively generating your result
+        - `completed` - Generation finished successfully, output available
+        - `failed` - Generation failed, check error details
+
+        **Output Availability:**
+        - **CDN URLs** (default): Available for 72 hours after completion
+        - **Base64 outputs** (when `return_base64: true`): Available for 60 minutes after completion
       operationId: getPredictionStatus
-      summary: Retrieve prediction status and output
-      description: >-
-        Returns the current state of a prediction. CDN output URLs are valid
-        for 72 hours; base64 outputs are valid for 60 minutes. Rate limit: 50
-        requests per 10 seconds.
       tags:
         - Predictions
       parameters:
         - name: id
           in: path
+          description: The unique prediction ID returned from the /v1/run endpoint
           required: true
           schema:
             type: string
-            format: uuid
-          description: Prediction identifier returned from /run.
+            example: "123a87r9-4129-4bb3-be18-9c9fb5bd7fc1-u1"
       responses:
-        '200':
-          description: Current prediction state.
+        "200":
+          description: Prediction status retrieved successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StatusResponse'
-        '401':
-          description: Unauthorized.
-        '404':
-          description: Prediction not found.
+                $ref: "#/components/schemas/StatusResponse"
+              examples:
+                starting:
+                  summary: Prediction is starting
+                  value:
+                    id: "123a87r9-4129-4bb3-be18-9c9fb5bd7fc1-u1"
+                    status: "starting"
+                    output: null
+                    error: null
+                in_queue:
+                  summary: Prediction is in queue
+                  value:
+                    id: "123a87r9-4129-4bb3-be18-9c9fb5bd7fc1-u1"
+                    status: "in_queue"
+                    output: null
+                    error: null
+                processing:
+                  summary: Prediction is processing
+                  value:
+                    id: "123a87r9-4129-4bb3-be18-9c9fb5bd7fc1-u1"
+                    status: "processing"
+                    output: null
+                    error: null
+                completed_urls:
+                  summary: Completed prediction with URL outputs
+                  value:
+                    id: "123a87r9-4129-4bb3-be18-9c9fb5bd7fc1-u1"
+                    status: "completed"
+                    output:
+                      - "https://cdn.fashn.ai/123a87r9-4129-4bb3-be18-9c9fb5bd7fc1-u1/output_0.png"
+                    error: null
+                completed_video:
+                  summary: Completed prediction with MP4 video outputs
+                  value:
+                    id: "123a87r9-4129-4bb3-be18-9c9fb5bd7fc1-u1"
+                    status: "completed"
+                    output:
+                      - "https://cdn.fashn.ai/123a87r9-4129-4bb3-be18-9c9fb5bd7fc1-u1/output_0.mp4"
+                    error: null
+                completed_base64:
+                  summary: Completed prediction with base64 outputs
+                  value:
+                    id: "123a87r9-4129-4bb3-be18-9c9fb5bd7fc1-u1"
+                    status: "completed"
+                    output:
+                      - "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..."
+                    error: null
+                failed:
+                  summary: Failed prediction
+                  value:
+                    id: "123a87r9-4129-4bb3-be18-9c9fb5bd7fc1-u1"
+                    status: "failed"
+                    output: null
+                    error:
+                      name: "ImageLoadError"
+                      message: "Error loading model image: Invalid URL format"
+        "401":
+          description: Unauthorized - Invalid or missing API key
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: "UnauthorizedAccess"
+                message: "Invalid or inactive API key"
+        "404":
+          description: Prediction not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: "NotFound"
+                message: "Prediction not found"
+        "429":
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: "RateLimitExceeded"
+                message: "Too many requests"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: "InternalServerError"
+                message: "Failed to fetch prediction status"
+
 components:
   securitySchemes:
-    BearerAuth:
+    ApiKeyAuth:
       type: http
       scheme: bearer
-      bearerFormat: API Key
+      description: "API key for API access (format: fa-UNIQUE_ID-HASH)"
+
   schemas:
-    RunRequest:
+    # Base request schemas
+    TryOnMaxRequest:
       type: object
       required:
         - model_name
@@ -99,52 +375,1182 @@ components:
       properties:
         model_name:
           type: string
-          description: >-
-            The FASHN model to invoke (e.g. tryon-max, product-to-model,
-            face-to-model, model-create, model-swap, edit, reframe,
-            image-to-video, background-remove).
-          examples:
-            - tryon-max
-            - product-to-model
+          enum: ["tryon-max"]
+          description: |
+            Premium virtual try-on built for AI fashion photoshoots and publishable e-commerce content. Places products onto model images with enhanced fidelity, producing images suitable for PDPs, catalogs, and marketing assets.
         inputs:
-          type: object
-          additionalProperties: true
-          description: Model-specific input parameters.
-    RunResponse:
+          $ref: "#/components/schemas/TryOnMaxInputs"
+
+    TryOnRequest:
       type: object
+      required:
+        - model_name
+        - inputs
+      properties:
+        model_name:
+          type: string
+          enum: ["tryon-v1.6"]
+          description: Virtual Try-On v1.6 enables realistic garment visualization using just a single photo of a person and a garment
+        inputs:
+          $ref: "#/components/schemas/TryOnInputs"
+
+    ModelCreateRequest:
+      type: object
+      required:
+        - model_name
+        - inputs
+      properties:
+        model_name:
+          type: string
+          enum: ["model-create"]
+          description: Model creation endpoint
+        inputs:
+          $ref: "#/components/schemas/ModelCreateInputs"
+
+    ModelSwapRequest:
+      type: object
+      required:
+        - model_name
+        - inputs
+      properties:
+        model_name:
+          type: string
+          enum: ["model-swap"]
+          description: Model swap endpoint for transforming model identity while preserving clothing and pose
+        inputs:
+          $ref: "#/components/schemas/ModelSwapInputs"
+
+    BackgroundRemoveRequest:
+      type: object
+      required:
+        - model_name
+        - inputs
+      properties:
+        model_name:
+          type: string
+          enum: ["background-remove"]
+          description: Background removal endpoint
+        inputs:
+          $ref: "#/components/schemas/BackgroundRemoveInputs"
+
+    BackgroundChangeRequest:
+      type: object
+      required:
+        - model_name
+        - inputs
+      properties:
+        model_name:
+          type: string
+          enum: ["background-change"]
+          description: Background change endpoint
+        inputs:
+          $ref: "#/components/schemas/BackgroundChangeInputs"
+
+    ReframeRequest:
+      type: object
+      required:
+        - model_name
+        - inputs
+      properties:
+        model_name:
+          type: string
+          enum: ["reframe"]
+          description: Image reframing endpoint
+        inputs:
+          $ref: "#/components/schemas/ReframeInputs"
+
+    ProductToModelRequest:
+      type: object
+      required:
+        - model_name
+        - inputs
+      properties:
+        model_name:
+          type: string
+          enum: ["product-to-model"]
+          description: |
+            Product to Model endpoint transforms product images into people wearing those products. It supports dual-mode operation: standard product-to-model (generates new person) and try-on mode (adds product to existing person)
+        inputs:
+          $ref: "#/components/schemas/ProductToModelInputs"
+
+    FaceToModelRequest:
+      type: object
+      required:
+        - model_name
+        - inputs
+      properties:
+        model_name:
+          type: string
+          enum: ["face-to-model"]
+          description: |
+            Face to Model endpoint transforms face images into try-on ready upper-body avatars. It converts cropped headshots or selfies into full upper-body representations that can be used in virtual try-on applications when full-body photos are not available, while preserving facial identity.
+        inputs:
+          $ref: "#/components/schemas/FaceToModelInputs"
+
+    ImageToVideoRequest:
+      type: object
+      required:
+        - model_name
+        - inputs
+      properties:
+        model_name:
+          type: string
+          enum: ["image-to-video"]
+          description: |
+            Image to Video turns a single image into a short motion clip, with tasteful camera work and model movements tailored for fashion.
+        inputs:
+          $ref: "#/components/schemas/ImageToVideoInputs"
+
+    EditRequest:
+      type: object
+      required:
+        - model_name
+        - inputs
+      properties:
+        model_name:
+          type: string
+          enum: ["edit"]
+          description: |
+            Versatile post-processing to restyle shots, adjust views, and fix details while preserving identity and product fidelity.
+        inputs:
+          $ref: "#/components/schemas/EditInputs"
+
+    PackshotRequest:
+      type: object
+      required:
+        - model_name
+        - inputs
+      properties:
+        model_name:
+          type: string
+          enum: ["packshot"]
+          description: |
+            Turns a product photo into a clean commercial packshot. Optionally accepts a style reference image to guide staging, background, and lighting.
+        inputs:
+          $ref: "#/components/schemas/PackshotInputs"
+
+    # Input schemas
+    TryOnMaxInputs:
+      type: object
+      required:
+        - product_image
+        - model_image
+      properties:
+        product_image:
+          type: string
+          description: "URL or base64 encoded image of the product (garment, accessory, etc.) to place on the model. Base64 images must include the proper prefix (e.g., data:image/jpg;base64,<YOUR_BASE64>)"
+          example: "https://example.com/garment.jpg"
+        model_image:
+          type: string
+          description: "URL or base64 encoded image of the person to wear the product. The try-on process preserves the model's identity, pose, and styling while seamlessly integrating the product. Base64 images must include the proper prefix (e.g., data:image/jpg;base64,<YOUR_BASE64>)"
+          example: "https://example.com/model.jpg"
+        prompt:
+          type: string
+          description: |
+            Optional instructions to customize the try-on result. Use this to adjust how the product is worn or make minor styling changes.
+
+            **Examples:** "remove scarf", "tuck in shirt", "roll up sleeves", "open jacket"
+          default: ""
+        resolution:
+          type: string
+          enum: ["1k", "2k", "4k"]
+          description: |
+            Resolution setting for the output image.
+          default: "1k"
+        aspect_ratio:
+          type: string
+          enum:
+            [
+              "21:9",
+              "1:1",
+              "4:3",
+              "3:2",
+              "2:3",
+              "5:4",
+              "4:5",
+              "3:4",
+              "16:9",
+              "9:16",
+            ]
+          description: |
+            Optional aspect ratio for the output image.
+        seed:
+          type: integer
+          minimum: 0
+          maximum: 4294967295
+          description: Controls generation randomness on a best-effort basis. Exact reproducibility is not guaranteed.
+          default: 42
+        num_images:
+          type: integer
+          minimum: 1
+          maximum: 4
+          description: Number of images to generate per request (1-4).
+          default: 1
+        output_format:
+          type: string
+          enum: ["png", "jpeg"]
+          description: |
+            Specifies the desired output image format.
+            - `png`: Delivers the highest quality image, ideal for use cases such as content creation where quality is paramount.
+            - `jpeg`: Provides a faster response with a slightly compressed image, more suitable for real-time applications.
+          default: "png"
+        return_base64:
+          type: boolean
+          description: "When set to `true`, the API will return the generated image as a base64-encoded string instead of a CDN URL. The base64 string will be prefixed according to the `output_format` (e.g., `data:image/png;base64,...` or `data:image/jpeg;base64,...`). This option offers enhanced privacy as user-generated outputs are not stored on our servers when `return_base64` is enabled."
+          default: false
+        generation_mode:
+          type: string
+          enum: ["fast", "balanced", "quality"]
+          description: |
+            Sets the generation quality level. 'quality' produces the most detailed and realistic output but takes longer to process and costs more credits. 'fast' prioritizes speed and lower cost.
+
+    TryOnInputs:
+      type: object
+      required:
+        - model_image
+        - garment_image
+      properties:
+        model_image:
+          type: string
+          description: Primary image of the person on whom the virtual try-on will be performed. Models Studio users can use their saved models by passing `saved:<model_name>`. Base64 images must include the proper prefix (e.g., `data:image/jpg;base64,<YOUR_BASE64>`)
+          example: "https://example.com/model.jpg"
+        garment_image:
+          type: string
+          description: Reference image of the clothing item to be tried on the `model_image`. Base64 images must include the proper prefix (e.g., `data:image/jpg;base64,<YOUR_BASE64>`)
+          example: "https://example.com/garment.jpg"
+        category:
+          type: string
+          enum: ["auto", "tops", "bottoms", "one-pieces"]
+          description: "Use `auto` to enable automatic classification of the garment type. For flat-lay or ghost mannequin images, the system detects the garment type automatically. For on-model images, full-body shots default to a full outfit swap. For focused shots (upper or lower body), the system selects the most likely garment type (tops or bottoms)."
+          default: "auto"
+        segmentation_free:
+          type: boolean
+          description: Direct garment fitting without clothing segmentation, enabling bulkier garment try-ons with improved preservation of body shape and skin texture. Set to `false` if original garments are not removed properly.
+          default: true
+        moderation_level:
+          type: string
+          enum: ["conservative", "permissive", "none"]
+          description: |
+            Sets the content moderation level for garment images.
+            - `conservative` enforces stricter modesty standards suitable for culturally sensitive contexts. Blocks underwear, swimwear, and revealing outfits.
+            - `permissive` allows swimwear, underwear, and revealing garments, while still blocking explicit nudity.
+            - `none` disables all content moderation.
+
+            **This technology is designed for ethical virtual try-on applications. Misuse—such as generating inappropriate imagery without consent—violates our Terms of Service. Setting moderation_level: none does not remove your responsibility for ethical and lawful use. Violations may result in service denial.**
+          default: "permissive"
+        garment_photo_type:
+          type: string
+          enum: ["auto", "flat-lay", "model"]
+          description: "Specifies the type of garment photo to optimize internal parameters for better performance. `model` is for photos of garments on a model, `flat-lay` is for flat-lay or ghost mannequin images, and `auto` attempts to automatically detect the photo type."
+          default: "auto"
+        mode:
+          type: string
+          enum: ["performance", "balanced", "quality"]
+          description: |
+            Specifies the mode of operation.
+            - `performance` mode is faster but may compromise quality (5 seconds).
+            - `balanced` mode is a perfect middle ground between speed and quality (8 seconds).
+            - `quality` mode is slower, but delivers the highest quality results (12–17 seconds).
+          default: "balanced"
+        seed:
+          type: integer
+          minimum: 0
+          maximum: 4294967295
+          description: Controls generation randomness on a best-effort basis. Exact reproducibility is not guaranteed.
+          default: 42
+        num_samples:
+          type: integer
+          minimum: 1
+          maximum: 4
+          description: Number of images to generate per request (1-4).
+          default: 1
+        output_format:
+          type: string
+          enum: ["png", "jpeg"]
+          description: |
+            Specifies the desired output image format.
+            - `png`: Delivers the highest quality image, ideal for use cases such as content creation where quality is paramount.
+            - `jpeg`: Provides a faster response with a slightly compressed image, more suitable for real-time applications like consumer virtual try-on experiences.
+          default: "png"
+        return_base64:
+          type: boolean
+          description: "When set to `true`, the API will return the generated image as a base64-encoded string instead of a CDN URL. The base64 string will be prefixed according to the `output_format` (e.g., `data:image/png;base64,...` or `data:image/jpeg;base64,...`). This option offers enhanced privacy as user-generated outputs are not stored on our servers when `return_base64` is enabled."
+          default: false
+
+    ModelCreateInputs:
+      type: object
+      required:
+        - prompt
+      properties:
+        prompt:
+          type: string
+          description: Prompt for the model image generation. Describes the desired fashion model, clothing, pose, and scene.
+          example: "A professional model wearing casual clothes"
+        aspect_ratio:
+          type: string
+          enum:
+            [
+              "21:9",
+              "1:1",
+              "4:3",
+              "3:2",
+              "2:3",
+              "5:4",
+              "4:5",
+              "3:4",
+              "16:9",
+              "9:16",
+            ]
+          description: |
+            Defines the width-to-height ratio of the generated image. This parameter controls the canvas dimensions for text-only generation. When image_reference is provided, the output inherits the reference image's aspect ratio and this parameter is ignored.
+
+            **Supported Resolutions**
+
+            Each aspect ratio corresponds to a specific resolution optimized for ~1MP output:
+
+            | Aspect Ratio | Resolution | Use Case |
+            |--------------|------------|----------|
+            | 21:9 | 1568 × 672 | Ultra-wide cinematic |
+            | 1:1 | 1024 × 1024 | Square format, social media |
+            | 2:3 | 832 × 1248 | Portrait, fashion photography |
+            | 3:4 | 880 × 1176 | Standard portrait |
+            | 4:5 | 912 × 1144 | Instagram portrait |
+            | 5:4 | 1144 × 912 | Landscape portrait |
+            | 4:3 | 1176 × 880 | Traditional landscape |
+            | 3:2 | 1176 × 784 | Wide landscape |
+            | 16:9 | 1360 × 768 | Widescreen, banners |
+            | 9:16 | 760 × 1360 | Vertical video format |
+          default: "2:3"
+        image_reference:
+          type: string
+          description: |
+            Optional reference image that guides the generation process. The model extracts structural information from this image to control the output composition.
+
+            Processing Behavior:
+            - Aspect Ratio: When image_reference is provided and aspect_ratio is omitted, the output matches the reference image's dimensions. If aspect_ratio is explicitly set, it overrides the reference image's proportions.
+            - Image Processing: Automatically resized while preserving aspect ratio.
+
+            Base64 images must include the proper prefix (e.g., data:image/jpg;base64,<YOUR_BASE64>)
+          example: "https://example.com/reference.jpg"
+        face_reference:
+          type: string
+          description: |
+            Optional face reference image to guide facial features in the generated model. When provided, the generated person will resemble the face in this image.
+
+            Base64 images must include the proper prefix (e.g., data:image/jpg;base64,<YOUR_BASE64>)
+          example: "https://example.com/face.jpg"
+        face_reference_mode:
+          type: string
+          enum: ["match_base", "match_reference"]
+          description: |
+            Controls how the face reference is applied.
+            - `match_base` adapts the reference face to match the base image's style and lighting.
+            - `match_reference` preserves the reference face as closely as possible.
+          default: "match_reference"
+        seed:
+          type: integer
+          minimum: 0
+          maximum: 4294967295
+          description: Controls generation randomness on a best-effort basis. Exact reproducibility is not guaranteed.
+          default: 42
+        num_images:
+          type: integer
+          minimum: 1
+          maximum: 4
+          description: Number of images to generate.
+          default: 1
+        resolution:
+          type: string
+          enum: ["1k", "2k", "4k"]
+          description: |
+            Resolution setting for the output image.
+          default: "1k"
+        output_format:
+          type: string
+          enum: ["png", "jpeg"]
+          description: |
+            Specifies the desired output image format.
+            - `png`: Delivers the highest quality image, ideal for use cases such as content creation where quality is paramount.
+            - `jpeg`: Provides a faster response with a slightly compressed image, more suitable for real-time applications.
+          default: "png"
+        return_base64:
+          type: boolean
+          description: "When set to `true`, the API will return the generated image as a base64-encoded string instead of a CDN URL. The base64 string will be prefixed according to the `output_format` (e.g., `data:image/png;base64,...` or `data:image/jpeg;base64,...`). This option offers enhanced privacy as user-generated outputs are not stored on our servers when `return_base64` is enabled."
+          default: false
+        generation_mode:
+          type: string
+          enum: ["fast", "balanced", "quality"]
+          description: |
+            Sets the generation quality level. 'quality' produces the most detailed and realistic output but takes longer to process and costs more credits. 'fast' prioritizes speed and lower cost.
+
+    ModelSwapInputs:
+      type: object
+      required:
+        - model_image
+      properties:
+        model_image:
+          type: string
+          description: "Source fashion model image containing the clothing and pose to preserve. The model's identity (face, skin tone, hair) will be transformed while keeping the outfit exactly as shown. Base64 images must include the proper prefix (e.g., data:image/jpg;base64,<YOUR_BASE64>)"
+          example: "https://example.com/model.jpg"
+        prompt:
+          type: string
+          description: |
+            Description of the desired model identity transformation. Specify ethnicity, facial features, hair color, and other physical characteristics.
+
+            **Default: Empty string (Random identity change)**
+          default: ""
+          example: "Asian woman with long black hair and brown eyes"
+        face_reference:
+          type: string
+          description: |
+            Optional face reference image to guide facial features of the replacement person. When provided, the new person will resemble the face in this image.
+
+            Base64 images must include the proper prefix (e.g., data:image/jpg;base64,<YOUR_BASE64>)
+          example: "https://example.com/face.jpg"
+        face_reference_mode:
+          type: string
+          enum: ["match_base", "match_reference"]
+          description: |
+            Controls how the face reference is applied.
+            - `match_base` adapts the reference face to match the base image's style and lighting.
+            - `match_reference` preserves the reference face as closely as possible.
+          default: "match_reference"
+        seed:
+          type: integer
+          minimum: 0
+          maximum: 4294967295
+          description: Controls generation randomness on a best-effort basis. Exact reproducibility is not guaranteed.
+          default: 42
+        num_images:
+          type: integer
+          minimum: 1
+          maximum: 4
+          description: Number of images to generate.
+          default: 1
+        resolution:
+          type: string
+          enum: ["1k", "2k", "4k"]
+          description: |
+            Resolution setting for the output image.
+          default: "1k"
+        aspect_ratio:
+          type: string
+          enum:
+            [
+              "21:9",
+              "1:1",
+              "4:3",
+              "3:2",
+              "2:3",
+              "5:4",
+              "4:5",
+              "3:4",
+              "16:9",
+              "9:16",
+            ]
+          description: |
+            Optional aspect ratio for the output image.
+        output_format:
+          type: string
+          enum: ["png", "jpeg"]
+          description: |
+            Specifies the desired output image format.
+            - `png`: Delivers the highest quality image, ideal for use cases such as content creation where quality is paramount.
+            - `jpeg`: Provides a faster response with a slightly compressed image, more suitable for real-time applications.
+          default: "png"
+        return_base64:
+          type: boolean
+          description: "When set to `true`, the API will return the generated image as a base64-encoded string instead of a CDN URL. The base64 string will be prefixed according to the `output_format` (e.g., `data:image/png;base64,...` or `data:image/jpeg;base64,...`). This option offers enhanced privacy as user-generated outputs are not stored on our servers when `return_base64` is enabled."
+          default: false
+        generation_mode:
+          type: string
+          enum: ["fast", "balanced", "quality"]
+          description: |
+            Sets the generation quality level. 'quality' produces the most detailed and realistic output but takes longer to process and costs more credits. 'fast' prioritizes speed and lower cost.
+
+    BackgroundRemoveInputs:
+      type: object
+      required:
+        - image
+      properties:
+        image:
+          type: string
+          description: "Source image to remove the background from. The AI will automatically detect the main subject and create a clean cutout with transparent background. Base64 images must include the proper prefix (e.g., data:image/jpg;base64,<YOUR_BASE64>)"
+          example: "https://example.com/image.jpg"
+        return_base64:
+          type: boolean
+          description: "When set to `true`, the API will return the generated image as a base64-encoded string instead of a CDN URL. The base64 string will be prefixed `data:image/png;base64,...`. This option offers enhanced privacy as user-generated outputs are not stored on our servers when `return_base64` is enabled."
+          default: false
+
+    BackgroundChangeInputs:
+      type: object
+      required:
+        - image
+        - prompt
+      properties:
+        image:
+          type: string
+          description: "Source image containing the subject to preserve. The AI will automatically detect and separate the foreground subject from the background. Base64 images must include the proper prefix (e.g., data:image/jpg;base64,<YOUR_BASE64>)"
+          example: "https://example.com/image.jpg"
+        prompt:
+          type: string
+          description: |
+            Description of the desired new background (e.g., 'beach sunset', 'modern office', 'forest clearing'). The AI generates a new background based on this description and harmonizes it with the preserved foreground subject.
+          example: "modern office space with large windows"
+        seed:
+          type: integer
+          minimum: 0
+          maximum: 4294967295
+          description: Controls generation randomness on a best-effort basis. Exact reproducibility is not guaranteed.
+          default: 42
+        resolution:
+          type: string
+          enum: ["1k", "2k", "4k"]
+          description: |
+            Resolution setting for the output image.
+          default: "1k"
+        num_images:
+          type: integer
+          minimum: 1
+          maximum: 4
+          description: Number of images to generate in a single run.
+          default: 1
+        output_format:
+          type: string
+          enum: ["png", "jpeg"]
+          description: |
+            Specifies the output image format.
+            - `png`: Delivers the highest quality image, ideal for use cases such as content creation where quality is paramount.
+            - `jpeg`: Provides a faster response with a slightly compressed image, more suitable for real-time applications.
+          default: "png"
+        return_base64:
+          type: boolean
+          description: "When set to `true`, the API will return the generated image as a base64-encoded string instead of a CDN URL. The base64 string will be prefixed according to the `output_format` (e.g., `data:image/png;base64,...` or `data:image/jpeg;base64,...`). This option offers enhanced privacy as user-generated outputs are not stored on our servers when `return_base64` is enabled."
+          default: false
+        generation_mode:
+          type: string
+          enum: ["fast", "balanced", "quality"]
+          description: |
+            Sets the generation quality level. 'quality' produces the most detailed and realistic output but takes longer to process and costs more credits. 'fast' prioritizes speed and lower cost.
+
+    ReframeInputs:
+      type: object
+      required:
+        - image
+        - aspect_ratio
+      properties:
+        image:
+          type: string
+          description: |
+            Source image to reframe to a new aspect ratio. The AI will intelligently analyze the image content and decide whether to expand (outpainting/zoom-out) or crop (zoom-in) based on subject position, content density, and edge details.
+
+            Resolution Handling: Output resolution is limited to ~1MP. If your image is already at or above this size, it will be downsampled so that, after reframing, the final result fits within the 1MP limit.
+
+            Base64 Format: Base64 images must include the proper prefix (e.g., data:image/jpg;base64,<YOUR_BASE64>)
+          example: "https://example.com/image.jpg"
+        aspect_ratio:
+          type: string
+          enum:
+            [
+              "21:9",
+              "1:1",
+              "4:3",
+              "3:2",
+              "2:3",
+              "5:4",
+              "4:5",
+              "3:4",
+              "16:9",
+              "9:16",
+            ]
+          description: |
+            Target aspect ratio for the reframed image. The AI determines whether expansion or cropping is more appropriate based on the current image content and dimensions.
+
+            **Behavior:**
+            - If target is wider than source → may expand horizontally or crop vertically
+            - If target is taller than source → may expand vertically or crop horizontally
+            - If source already matches target (within 2% tolerance) → returns an error
+
+            **Supported Aspect Ratios**
+
+            Each aspect ratio corresponds to a specific resolution optimized for ~1MP output:
+
+            | Aspect Ratio | Resolution | Use Case |
+            |--------------|------------|----------|
+            | 21:9 | 1568 × 672 | Ultra-wide cinematic |
+            | 1:1 | 1024 × 1024 | Square format, social media |
+            | 4:3 | 1176 × 880 | Traditional landscape |
+            | 3:2 | 1248 × 832 | Standard landscape |
+            | 2:3 | 832 × 1248 | Portrait, fashion photography |
+            | 5:4 | 1144 × 912 | Instagram landscape |
+            | 4:5 | 912 × 1144 | Instagram portrait |
+            | 3:4 | 880 × 1176 | Standard portrait |
+            | 16:9 | 1360 × 760 | Horizontal video format |
+            | 9:16 | 760 × 1360 | Vertical video format |
+          example: "16:9"
+        seed:
+          type: integer
+          minimum: 0
+          maximum: 4294967295
+          description: Controls generation randomness on a best-effort basis. Exact reproducibility is not guaranteed.
+          default: 42
+        num_images:
+          type: integer
+          minimum: 1
+          maximum: 4
+          description: Number of images to generate per request (1-4).
+          default: 1
+        output_format:
+          type: string
+          enum: ["png", "jpeg"]
+          description: |
+            Specifies the desired output image format.
+            - `png`: Delivers the highest quality image, ideal for use cases such as content creation where quality is paramount.
+            - `jpeg`: Provides a faster response with a slightly compressed image, more suitable for real-time applications.
+          default: "png"
+        return_base64:
+          type: boolean
+          description: "When set to `true`, the API will return the generated image as a base64-encoded string instead of a CDN URL. The base64 string will be prefixed according to the `output_format` (e.g., `data:image/png;base64,...` or `data:image/jpeg;base64,...`). This option offers enhanced privacy as user-generated outputs are not stored on our servers when `return_base64` is enabled."
+          default: false
+        generation_mode:
+          type: string
+          enum: ["fast", "balanced", "quality"]
+          description: |
+            Sets the generation quality level. 'quality' produces the most detailed and realistic output but takes longer to process and costs more credits. 'fast' prioritizes speed and lower cost.
+
+    ProductToModelInputs:
+      type: object
+      required:
+        - product_image
+      properties:
+        product_image:
+          type: string
+          description: "URL or base64 encoded image of the product to be worn. Supports clothing, accessories, shoes, and other wearable fashion items. Base64 images must include the proper prefix (e.g., data:image/jpg;base64,<YOUR_BASE64>)"
+          example: "https://example.com/product.jpg"
+        model_image:
+          type: string
+          description: |
+            URL or base64 encoded image of the person to wear the product. When provided, enables try-on mode. When omitted, generates a new person wearing the product. Base64 images must include the proper prefix (e.g., data:image/jpg;base64,<YOUR_BASE64>)
+          example: "https://example.com/person.jpg"
+        image_prompt:
+          type: string
+          description: |
+            Optional URL or base64 of an inspiration image to guide pose, environment, and lighting while keeping the final edit product-centric.
+          example: "https://example.com/inspiration.jpg"
+        prompt:
+          type: string
+          description: |
+            Additional instructions for person appearance (when `model_image` is not provided), styling preferences, or background.
+
+            **Examples:** "man with tattoos", "tucked-in", "open jacket", "rolled-up sleeves", "studio background", "professional office setting"
+
+            **Default:** None
+          default: ""
+          example: "professional office setting"
+        aspect_ratio:
+          type: string
+          enum:
+            [
+              "21:9",
+              "1:1",
+              "4:3",
+              "3:2",
+              "2:3",
+              "5:4",
+              "4:5",
+              "3:4",
+              "16:9",
+              "9:16",
+            ]
+          description: |
+            Desired aspect ratio for the output image. Only applies when `model_image` is not provided (standard product-to-model mode).
+
+            When `model_image` is provided (try-on mode), this parameter is ignored and the output will match the `model_image`'s aspect ratio.
+                        
+            **Default:** product_image's aspect ratio (standard mode only)
+        resolution:
+          type: string
+          enum: ["1k", "2k", "4k"]
+          description: |
+            Resolution setting for the output image.
+          default: "1k"
+        seed:
+          type: integer
+          minimum: 0
+          maximum: 4294967295
+          description: Controls generation randomness on a best-effort basis. Must be between 0 and 2^32-1; exact reproducibility is not guaranteed.
+          default: 42
+        output_format:
+          type: string
+          enum: ["png", "jpeg"]
+          description: |
+            Specifies the desired output image format.
+            - `png`: Delivers the highest quality image, ideal for use cases such as content creation where quality is paramount.
+            - `jpeg`: Provides a faster response with a slightly compressed image, more suitable for real-time applications.
+          default: "png"
+        return_base64:
+          type: boolean
+          description: |
+            When set to `true`, the API will return the generated image as a base64-encoded string instead of a CDN URL. The base64 string will be prefixed `data:image/png;base64,....`
+
+            This option offers enhanced privacy as user-generated outputs are not stored on our servers when `return_base64` is enabled.
+          default: false
+        generation_mode:
+          type: string
+          enum: ["fast", "balanced", "quality"]
+          description: |
+            Sets the generation quality level. 'quality' produces the most detailed and realistic output but takes longer to process and costs more credits. 'fast' prioritizes speed and lower cost.
+
+    FaceToModelInputs:
+      type: object
+      required:
+        - face_image
+      properties:
+        face_image:
+          type: string
+          description: |
+            URL or base64 encoded image of the face to transform into an upper-body avatar. The AI will analyze facial features, hair, and skin tone to create a representation suitable for virtual try-on applications.
+
+            Base64 images must include the proper prefix (e.g., data:image/jpg;base64,<YOUR_BASE64>)
+          example: "https://example.com/headshot.jpg"
+        prompt:
+          type: string
+          description: |
+            Optional styling or body shape guidance for the avatar representation. Examples: "athletic build", "curvy figure", "slender frame".
+
+            If you don't provide a prompt, the body shape will be inferred from the face image.
+
+            **Default:** Empty string
+          default: ""
+          example: "athletic build"
+        aspect_ratio:
+          type: string
+          enum:
+            [
+              "21:9",
+              "1:1",
+              "4:3",
+              "3:2",
+              "2:3",
+              "5:4",
+              "4:5",
+              "3:4",
+              "16:9",
+              "9:16",
+            ]
+          description: |
+            Desired aspect ratio for the output image. Vertical ratios (e.g. `2:3`, `3:4`, `9:16`) produce the most natural upper-body portraits.
+
+            **Default:** `2:3`
+          default: "2:3"
+        seed:
+          type: integer
+          minimum: 0
+          maximum: 4294967295
+          description: Controls generation randomness on a best-effort basis. Exact reproducibility is not guaranteed.
+          default: 42
+        resolution:
+          type: string
+          enum: ["1k", "2k", "4k"]
+          description: |
+            Resolution setting for the output image.
+          default: "1k"
+        num_images:
+          type: integer
+          minimum: 1
+          maximum: 4
+          description: Number of images to generate in a single run.
+          default: 1
+        output_format:
+          type: string
+          enum: ["png", "jpeg"]
+          description: |
+            Specifies the output image format.
+            - `png` - PNG format, original quality
+            - `jpeg` - JPEG format, smaller file size
+
+            **Default:** `"jpeg"`
+          default: "jpeg"
+        return_base64:
+          type: boolean
+          description: |
+            When set to `true`, the API will return the generated image as a base64-encoded string instead of a CDN URL. The base64 string will be prefixed `data:image/png;base64,...`.
+
+            This option offers enhanced privacy as user-generated outputs are not stored on our servers when `return_base64` is enabled.
+
+            **Default:** `false`
+          default: false
+        generation_mode:
+          type: string
+          enum: ["fast", "balanced", "quality"]
+          description: |
+            Sets the generation quality level. 'quality' produces the most detailed and realistic output but takes longer to process and costs more credits. 'fast' prioritizes speed and lower cost.
+
+    ImageToVideoInputs:
+      type: object
+      required:
+        - image
+      properties:
+        image:
+          type: string
+          description: |
+            Source image to animate into a short video.
+
+            Base64 images must include the proper prefix (e.g., `data:image/jpg;base64,<YOUR_BASE64>`)
+          example: "https://example.com/photo.jpg"
+        prompt:
+          type: string
+          description: |
+            Optional motion guidance. Detailed prompting is not recommended because motion is difficult to control precisely. For the best results, leave this field empty and allow the system to plan motion automatically. If you include guidance, keep it short and concrete (e.g., "raising hand to touch face").
+          default: ""
+        negative_prompt:
+          type: string
+          description: Optional cues to avoid undesirable motion or framing.
+        duration:
+          type: integer
+          enum: [5, 10]
+          description: Duration of the generated video in seconds.
+          default: 5
+        resolution:
+          type: string
+          enum: ["480p", "720p", "1080p"]
+          description: Target video resolution used by the video engine.
+          default: "1080p"
+        end_image:
+          type: string
+          description: |
+            Optional image to use as the final frame of the generated video. When provided, the video smoothly transitions from the `image` (start frame) to `end_image` (end frame) over the clip duration.
+
+            Supported with `resolution: "480p"`, `"720p"`, and `"1080p"`.
+
+            Base64 images must include the proper prefix (e.g., `data:image/jpg;base64,<YOUR_BASE64>`).
+          example: "https://example.com/end-frame.jpg"
+        seed:
+          type: integer
+          description: Controls generation randomness on a best-effort basis. Exact reproducibility is not guaranteed.
+          default: 42
+
+    EditInputs:
+      type: object
+      required:
+        - image
+        - prompt
+      properties:
+        image:
+          type: string
+          description: |
+            Source image to edit. The AI will apply the requested modifications based on your prompt while preserving the overall composition and identity of the image.
+
+            Base64 images must include the proper prefix (e.g., `data:image/jpg;base64,<YOUR_BASE64>`)
+          example: "https://example.com/fashion-model.jpg"
+        mask:
+          type: string
+          description: |
+            Optional mask image where white (255) marks regions to edit and black (0) areas remain unchanged. When provided, the edit will only affect the masked regions, enabling precise local edits.
+
+            Base64 images must include the proper prefix (e.g., `data:image/png;base64,<YOUR_BASE64>`)
+          example: "https://example.com/mask.png"
+        prompt:
+          type: string
+          description: |
+            Natural language description of the edit to apply. Be specific about what you want to change.
+
+            **Examples:** "change the dress to red", "add sunglasses", "make the background a beach sunset", "change the shirt to a floral pattern"
+          example: "change the dress to red"
+        image_context:
+          type: string
+          description: |
+            Optional URL or base64 of a context image to guide the edit. This image provides additional visual context that influences how the edit is applied.
+
+            Base64 images must include the proper prefix (e.g., `data:image/jpg;base64,<YOUR_BASE64>`)
+          example: "https://example.com/context-reference.jpg"
+        seed:
+          type: integer
+          minimum: 0
+          maximum: 4294967295
+          description: Controls generation randomness on a best-effort basis. Exact reproducibility is not guaranteed.
+          default: 42
+        num_images:
+          type: integer
+          minimum: 1
+          maximum: 4
+          description: Number of images to generate per request (1-4).
+          default: 1
+        resolution:
+          type: string
+          enum: ["1k", "2k", "4k"]
+          description: |
+            Resolution setting for the output image.
+          default: "1k"
+        aspect_ratio:
+          type: string
+          enum:
+            [
+              "21:9",
+              "1:1",
+              "4:3",
+              "3:2",
+              "2:3",
+              "5:4",
+              "4:5",
+              "3:4",
+              "16:9",
+              "9:16",
+            ]
+          description: |
+            Optional aspect ratio for the output image.
+        output_format:
+          type: string
+          enum: ["png", "jpeg"]
+          description: |
+            Specifies the desired output image format.
+            - `png`: Delivers the highest quality image, ideal for use cases such as content creation where quality is paramount.
+            - `jpeg`: Provides a faster response with a slightly compressed image, more suitable for real-time applications.
+          default: "png"
+        return_base64:
+          type: boolean
+          description: "When set to `true`, the API will return the generated image as a base64-encoded string instead of a CDN URL. The base64 string will be prefixed according to the `output_format` (e.g., `data:image/png;base64,...` or `data:image/jpeg;base64,...`). This option offers enhanced privacy as user-generated outputs are not stored on our servers when `return_base64` is enabled."
+          default: false
+        generation_mode:
+          type: string
+          enum: ["fast", "balanced", "quality"]
+          description: |
+            Sets the generation quality level. 'quality' produces the most detailed and realistic output but takes longer to process and costs more credits. 'fast' prioritizes speed and lower cost.
+
+    PackshotInputs:
+      type: object
+      required:
+        - product_image
+      properties:
+        product_image:
+          type: string
+          description: |
+            Source product image to convert into a commercial packshot. The AI generates a clean studio-style presentation while preserving product identity and detail.
+
+            Base64 images must include the proper prefix (e.g., `data:image/jpg;base64,<YOUR_BASE64>`)
+          example: "https://example.com/product.jpg"
+        image_context:
+          type: string
+          description: |
+            Optional URL or base64 of a style reference image guiding the packshot presentation (staging, background, lighting). The reference influences styling without overriding the product itself.
+
+            Base64 images must include the proper prefix (e.g., `data:image/jpg;base64,<YOUR_BASE64>`)
+          example: "https://example.com/reference-packshot.jpg"
+        prompt:
+          type: string
+          description: |
+            Optional natural-language description of the desired packshot styling. If empty, the model picks a sensible commercial default for the detected product.
+
+            **Examples:** "clean white background flat-lay", "soft studio lighting on a beige pedestal", "isolated on a marble surface"
+          default: ""
+        seed:
+          type: integer
+          minimum: 0
+          maximum: 4294967295
+          description: Controls generation randomness on a best-effort basis. Exact reproducibility is not guaranteed.
+          default: 42
+        num_images:
+          type: integer
+          minimum: 1
+          maximum: 4
+          description: Number of images to generate per request (1-4).
+          default: 1
+        resolution:
+          type: string
+          enum: ["1k", "2k", "4k"]
+          description: |
+            Resolution setting for the output image.
+          default: "1k"
+        aspect_ratio:
+          type: string
+          enum:
+            [
+              "21:9",
+              "1:1",
+              "4:3",
+              "3:2",
+              "2:3",
+              "5:4",
+              "4:5",
+              "3:4",
+              "16:9",
+              "9:16",
+            ]
+          description: |
+            Optional aspect ratio for the output image.
+        output_format:
+          type: string
+          enum: ["png", "jpeg"]
+          description: |
+            Specifies the desired output image format.
+            - `png`: Delivers the highest quality image, ideal for use cases such as content creation where quality is paramount.
+            - `jpeg`: Provides a faster response with a slightly compressed image, more suitable for real-time applications.
+          default: "png"
+        return_base64:
+          type: boolean
+          description: "When set to `true`, the API will return the generated image as a base64-encoded string instead of a CDN URL. The base64 string will be prefixed according to the `output_format` (e.g., `data:image/png;base64,...` or `data:image/jpeg;base64,...`). This option offers enhanced privacy as user-generated outputs are not stored on our servers when `return_base64` is enabled."
+          default: false
+        generation_mode:
+          type: string
+          enum: ["fast", "balanced", "quality"]
+          description: |
+            Sets the generation quality level. 'quality' produces the most detailed and realistic output but takes longer to process and costs more credits. 'fast' prioritizes speed and lower cost.
+
+    # Response schemas
+    PredictionResponse:
+      type: object
+      required:
+        - id
+        - error
       properties:
         id:
           type: string
-          format: uuid
-          description: Identifier used to poll prediction status.
+          description: Unique prediction identifier
+          example: "12345678-1234-5678-9012-123456789012"
         error:
           type: string
           nullable: true
-          description: Error message if the request was rejected, otherwise null.
+          description: Error message if prediction failed to start
+          example: null
+
     StatusResponse:
       type: object
+      required:
+        - id
+        - status
+        - error
       properties:
         id:
           type: string
+          description: The unique prediction ID
+          example: "123a87r9-4129-4bb3-be18-9c9fb5bd7fc1-u1"
         status:
           type: string
           enum:
-            - starting
-            - in_queue
-            - processing
-            - completed
-            - failed
-          description: Current lifecycle state of the prediction.
+            [
+              "starting",
+              "in_queue",
+              "processing",
+              "completed",
+              "failed",
+              "canceled",
+              "time_out",
+            ]
+          description: Current status of the prediction
+          example: "completed"
         output:
-          type: array
+          oneOf:
+            - type: array
+              items:
+                type: string
+                format: uri
+              description: Array of CDN URLs to generated media (images or videos)
+              example:
+                [
+                  "https://cdn.fashn.ai/output/image1.jpg",
+                  "https://cdn.fashn.ai/output/image2.jpg",
+                ]
+            - type: array
+              items:
+                type: string
+                pattern: "^data:image\\/(png|jpeg);base64,"
+              description: Array of base64-encoded images with proper data URI prefix
+              example: ["data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..."]
+          description: Generated media - for images, outputs are either CDN URLs or base64 (when requested); for videos, outputs are CDN MP4 URLs
           nullable: true
-          items:
-            type: string
-            format: uri
-          description: >-
-            Output asset URLs (CDN). Available when status is completed. URLs
-            are valid for 72 hours.
+        error:
+          oneOf:
+            - type: object
+              properties:
+                name:
+                  type: string
+                  enum:
+                    [
+                      "ImageLoadError",
+                      "ContentModerationError",
+                      "PoseError",
+                      "InputValidationError",
+                      "PipelineError",
+                      "ThirdPartyError",
+                      "3rdPartyProviderError",
+                      "InternalServerError",
+                    ]
+                  description: |
+                    Error type/category with troubleshooting guidance:
+
+                    **ImageLoadError** - Unable to load image from provided inputs
+                    - *Cause*: Pipeline cannot load product image, model image, garment image, or reference image
+                    - *Solution*: For URLs - ensure public accessibility and correct Content-Type headers. For Base64 - include proper data:image/format;base64 prefix
+
+                    **ContentModerationError** - Prohibited content detected
+                    - *Cause*: Content moderation flagged product, garment, or model image. More sensitive when model_image contains an actual person (virtual try-on mode)
+                    - *Solution*: For try-on models - adjust moderation_level to 'permissive' or 'none' if appropriate. For product-to-model - explicit or inappropriate imagery is prohibited, particularly with real people. For intimate apparel (lingerie/swimwear), use FASHN Virtual Try-On endpoint with full moderation control. Product generation without model_image operates under more permissive policies. Contact support@fashn.ai with prediction ID if content was incorrectly flagged
+
+                    **PoseError** - Unable to detect body pose (try-on models only)  
+                    - *Cause*: Body pose not detectable in model or garment image
+                    - *Solution*: Improve image quality following model photo guidelines
+
+                    **InputValidationError** - Invalid parameter combination (reframe only)
+                    - *Cause*: Missing required parameters or invalid values for selected mode
+                    - *Solution*: Ensure target_aspect_ratio is provided when mode is 'aspect_ratio'. Check aspect ratio values are from supported list
+
+                    **PipelineError** - Unexpected pipeline execution error
+                    - *Cause*: Internal processing failure
+                    - *Solution*: Retry request (no charge for failures). Contact support@fashn.ai with prediction ID if persists
+
+                    **ThirdPartyError** - Third-party processor failure
+                    - *Cause*: External service restrictions (content/prompt limitations)
+                    - *Model-specific solutions*:
+                      - *Try-on*: Modify image inputs for captioning restrictions
+                      - *Product-to-model*: Try modifying image inputs, most likely caused by content restrictions in image captioning
+                      - *Model-swap*: Try different inputs or disable prompt enhancement
+                      - *Background-change*: Modify image inputs or background prompt
+                      - *Reframe*: Try different image inputs for captioning restrictions
+                    - Contact support@fashn.ai with prediction ID if persists
+
+                    **3rdPartyProviderError** - Third-party provider failure (fallback error type)
+                    - *Cause*: External provider error without specific classification
+                    - *Solution*: Retry request. Contact support@fashn.ai with prediction ID if persists
+
+                    **InternalServerError** - General server error (fallback error type)
+                    - *Cause*: Unexpected server-side failure
+                    - *Solution*: Retry request. Contact support@fashn.ai with prediction ID if persists
+                  example: "ImageLoadError"
+                message:
+                  type: string
+                  description: Detailed error message explaining the specific failure
+                  example: "Error loading model image: Invalid URL format"
+              required:
+                - name
+                - message
+              description: "Structured error object with name and message fields"
+          description: Error information if prediction failed, null otherwise
+          nullable: true
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+      properties:
         error:
           type: string
-          nullable: true
-          description: Error message when status is failed, otherwise null.
+          enum:
+            [
+              "InternalServerError",
+              "BadRequest",
+              "NotFound",
+              "RateLimitExceeded",
+              "UnauthorizedAccess",
+              "OutOfCredits",
+              "ConcurrencyLimitExceeded",
+            ]
+          description: Error type identifier
+        message:
+          type: string
+          description: Human-readable error message
+          example: "Invalid request parameters"
+
+tags:
+  - name: Predictions
+    description: AI prediction operations
